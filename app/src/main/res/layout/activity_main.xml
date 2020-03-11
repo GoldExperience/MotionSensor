@@ -16,7 +16,8 @@
                 android:layout_height="wrap_content" android:id="@+id/export_csv"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:onClick="send_record"
-                tools:ignore="OnClick"/>
+                tools:ignore="OnClick" android:textColorLink="#005E2828" android:textColor="@color/colorPrimary"
+                android:textColorHighlight="@color/colorAccent"/>
         <Spinner
                 android:layout_width="match_parent"
                 android:layout_height="35dp" android:id="@+id/selectmode" android:spinnerMode="dropdown"/>

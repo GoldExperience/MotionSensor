@@ -39,13 +39,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Timestamp start_time_stamp;
     Timestamp finish_time_stamp;
 
+    //data from motion sensors
+    double X_value, Y_value, Z_value;
+    Timestamp time_stamp = new Timestamp(currentTimeMillis());
+    Timestamp last_timestamp = time_stamp;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
-
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         sensorManager.registerListener(MainActivity.this,accelerometer,SensorManager.SENSOR_DELAY_FASTEST);
@@ -87,6 +89,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         row_count_text.setText("start record \nCurrent Row Count: "+row_count);
     }
 
+    public void start_record2(View view){
+        Timestamp current_time = new Timestamp(currentTimeMillis());
+        Timestamp last_time = current_time;
+        int row_count = 0;
+
+        data=new StringBuilder();
+        data.append("Timestamp,X,Y,Z\n");
+
+        while (true){
+            current_time = new Timestamp(currentTimeMillis());
+            long difference = current_time.getTime() - last_time.getTime();
+            if(difference>20){
+                row_count++;
+                last_time=current_time;
+                //build data
+                data.append(String.format("%s,%s,%s,%s\n", current_time, X_value, Y_value, Z_value));
+                row_count_text.setText("start record \nCurrent Row Count: "+row_count);
+                acceleration_text.setText(current_time+"\nX: "+X_value+"\nY: "+Y_value+"\nZ: "+Z_value);
+            }
+            if(row_count>=row_limit_count){
+                row_count=0;
+                break;
+            }
+            //upload the data
+            row_count_text.setText("Record finish");
+        }
+    }
     
     public void send_record(View view){
         finish_time_stamp = new Timestamp(currentTimeMillis());
@@ -139,20 +168,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent event) {
 //        Log.d(TAG,"onSensorChanged X: "+event.values[0]+" Y: "+event.values[1]+" Z: "+event.values[2]);
-        Timestamp time_stamp = new Timestamp(currentTimeMillis());
+        X_value = event.values[0];
+        Y_value = event.values[1];
+        Z_value = event.values[2];
+
         if(start_record==true) {
-            if (row_count <= row_limit_count) {
-                row_count++;
-                data.append(String.format("%s,%s,%s,%s\n", time_stamp, event.values[0], event.values[1], event.values[2]));
-//                Log.d(TAG,"recording...");
-                row_count_text.setText("start record \nCurrent Row Count: "+row_count);
-                acceleration_text.setText(time_stamp+"\nX: "+event.values[0]+"\nY: "+event.values[1]+"\nZ: "+event.values[2]);
-            } else {
-//                Log.d(TAG, String.valueOf(data));
-                start_record = false;
-                row_count_text.setText("Record finish");
-                row_count=0;
-            }
+                if (row_count <= row_limit_count) {
+                    time_stamp = new Timestamp(System.currentTimeMillis());
+                    long difference = time_stamp.getTime() - last_timestamp.getTime();
+                    if(difference>=20){
+                        row_count++;
+                        data.append(String.format("%s,%s,%s,%s\n", time_stamp, event.values[0], event.values[1], event.values[2]));
+                        row_count_text.setText("start record \nCurrent Row Count: "+row_count);
+                        acceleration_text.setText(time_stamp+"\nX: "+event.values[0]+"\nY: "+event.values[1]+"\nZ: "+event.values[2]);
+
+                        last_timestamp=time_stamp;
+                    }
+                } else {
+                    start_record = false;
+                    row_count_text.setText("Record finish");
+                    row_count=0;
+                }
         }
     }
 
