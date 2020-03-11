@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MotionSensor</string>
+    <string-array name="modes">
+        <item>Accelerometer_gravity</item>
+        <item>Accelerometer_uncalibrated</item>
+        <item>Gyroscope</item>
+        <item>linear_acceleration</item>
+    </string-array>
+</resources>
